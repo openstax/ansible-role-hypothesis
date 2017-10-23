@@ -1,0 +1,4 @@
+---
+hypothesis:
+  server_name: "{{ application.server_name }}"
+  
