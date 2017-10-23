@@ -1,5 +1,6 @@
 ---
-
+- debug:
+    msg: "{{ openstax_hypothesis_role }}"
 - name: Copy over the nginx configuration file for the website
   include_tasks: webconfig.yml
   tags: hypothesis-web

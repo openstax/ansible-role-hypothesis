@@ -1,4 +1,6 @@
 ---
-hypothesis:
-  server_name: "{{ application.server_name }}"
-  
+openstax_hypothesis_role:
+  server_name:
+  client_id:
+  client_secret:
+  secret_key:
