@@ -1,6 +1,54 @@
 ---
 - debug:
     msg: "{{ openstax_hypothesis_role }}"
+
 - name: Copy over the nginx configuration file for the website
   include_tasks: webconfig.yml
   tags: hypothesis-web
+
+- name: Run the hypothesis initialization script
+  command: "{{ openstax_hypothesis_role.virtualenv.bin_dir }}/python -m h init"
+  environment:
+      APP_URL: "{{ openstax_hypothesis_role.server_name }}"
+  args: 
+    chdir: "{{ openstax_hypothesis_role.application_dir }}"
+  tags: hypothesis-init
+
+- name: copy over the alembic config
+  become: yes
+  template:
+    src: conf/alembic.ini
+    dest: "{{ openstax_hypothesis_role.application_dir }}/conf/alembic.ini"
+  tags: alembic-config
+
+- name: copy over the celery worker systemd file
+  become: yes
+  template:
+    src: lib/systemd/system/h-worker.service
+    dest: /lib/systemd/system/h-worker.service
+  notify: reload systemd
+  tags: worker-copy
+
+- name: copy over the celery beat systemd file
+  become: yes
+  template:
+    src: lib/systemd/system/h-beat.service
+    dest: /lib/systemd/system/h-beat.service
+  notify: reload systemd
+  tags: beat-copy
+
+- name: start the h-worker process
+  become: yes
+  systemd:
+    name: h-worker.service
+    enabled: yes
+    daemon_reload: yes
+  tags: start-worker
+
+- name: start the h-beat process
+  become: yes
+  systemd:
+    name: h-beat.service
+    enabled: yes
+    daemon_reload: yes
+  tags: start-beat

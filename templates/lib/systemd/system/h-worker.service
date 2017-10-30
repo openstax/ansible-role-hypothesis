@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Hypothesis Celery Worker
+After=network.target
+
+[Service]
+Type=forking
+User=www-data
+EnvironmentFile=-/etc/default/h-worker
+WorkingDirectory={{ openstax_hypothesis_role.application_dir }}
+ExecStart={{ openstax_hypothesis_role.application_dir }}/bin/hypothesis celery worker --autoreload -l
+StandardOutput=syslog
+StandardError=syslog
+Type=simple
+RestartSec=1
+
+
+[Install]
+WantedBy=multi-user.target
