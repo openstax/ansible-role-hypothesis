@@ -1,13 +1,10 @@
 ---
-- debug:
-    msg: "{{ openstax_hypothesis_role }}"
-
 - name: Copy over the nginx configuration file for the website
   include_tasks: webconfig.yml
   tags: hypothesis-web
 
 - name: Run the hypothesis initialization script
-  command: "{{ openstax_hypothesis_role.virtualenv.bin_dir }}/python -m h init"
+  command: "{{ openstax_hypothesis_role.virtualenv_bin_dir }}/python -m h init"
   environment:
       APP_URL: "{{ openstax_hypothesis_role.server_name }}"
   args: 
@@ -21,34 +18,32 @@
     dest: "{{ openstax_hypothesis_role.application_dir }}/conf/alembic.ini"
   tags: alembic-config
 
-- name: copy over the celery worker systemd file
+- name: copy over the application .service and .socket file
   become: yes
   template:
-    src: lib/systemd/system/h-worker.service
-    dest: /lib/systemd/system/h-worker.service
-  notify: reload systemd
-  tags: worker-copy
+    src: "{{ item.template }}"
+    dest: "{{ item.dest }}"
+  with_items: 
+    - "{{ openstax_hypothesis_role.services }}"
+  when: item.state|default('present') != 'absent'
 
-- name: copy over the celery beat systemd file
+- name: copy over the box private_key
   become: yes
-  template:
-    src: lib/systemd/system/h-beat.service
-    dest: /lib/systemd/system/h-beat.service
-  notify: reload systemd
-  tags: beat-copy
+  copy:
+    content: "{{ openstax_hypothesis_role.box_rsa_private_key_content }}"
+    dest: "{{ openstax_hypothesis_role.box_rsa_private_key_path }}"
+    force: yes
 
 - name: start the h-worker process
   become: yes
-  systemd:
-    name: h-worker.service
-    enabled: yes
-    daemon_reload: yes
+  service:
+    name: h-worker
+    state: started
   tags: start-worker
 
 - name: start the h-beat process
   become: yes
-  systemd:
-    name: h-beat.service
-    enabled: yes
-    daemon_reload: yes
+  service:
+    name: h-beat
+    state: started
   tags: start-beat

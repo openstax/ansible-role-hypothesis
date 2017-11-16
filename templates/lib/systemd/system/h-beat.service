@@ -6,7 +6,7 @@ After=network.target
 [Service]
 Type=forking
 User=www-data
-EnvironmentFile=-/etc/default/h-beat
+EnvironmentFile=-/etc/default/h
 WorkingDirectory={{ openstax_hypothesis_role.application_dir }}
 ExecStart={{ openstax_hypothesis_role.application_dir }}/bin/hypothesis celery beat 
 StandardOutput=syslog

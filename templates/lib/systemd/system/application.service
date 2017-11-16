@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+[Unit]
+Description={{ item.description }}
+{% if 'requires' in item %}
+Requires={{ item.requires }} 
+{% endif %}
+After=network.target
+
+[Service]
+{% for param in item.service_params %}
+{{ param.name }}={{ param.value }}
+{% endfor %}
+
+[Install]
+WantedBy=multi-user.target
