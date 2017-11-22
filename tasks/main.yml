@@ -11,6 +11,14 @@
     chdir: "{{ openstax_hypothesis_role.application_dir }}"
   tags: hypothesis-init
 
+- name: Run the gulp build command 
+  become: yes
+  become_user: "{{ openstax_hypothesis_role.user }}"
+  command: "/usr/local/lib/npm/bin/gulp build"
+  args: 
+    chdir: "{{ openstax_hypothesis_role.application_dir }}"
+  tags: gulp-build 
+
 - name: copy over the alembic config
   become: yes
   template:
@@ -30,6 +38,7 @@
   template:
     src: "{{ item.value.template }}"
     dest: "{{ item.value.dest }}"
+    mode: u+x
   with_dict: "{{ openstax_hypothesis_role.init_scripts }}" 
   when: item.value.state|default('present') != 'absent'
 
@@ -41,11 +50,20 @@
   with_dict: "{{ openstax_hypothesis_role.env_files }}" 
   when: item.value.state|default('present') != 'absent'
 
+- name: copy over the tmpfiles.d files to be used by the systemd services
+  become: yes
+  template:
+    src: "{{ item.value.template }}"
+    dest: "{{ item.value.dest }}"
+  with_dict: "{{ openstax_hypothesis_role.tmpfiles }}" 
+  when: item.value.state|default('present') != 'absent'
+
 - name: copy over the box private_key
   become: yes
   copy:
     content: "{{ openstax_hypothesis_role.box_rsa_private_key_content }}"
     dest: "{{ openstax_hypothesis_role.box_rsa_private_key_path }}"
+    mode: 0600
     force: yes
 
 - name: start the h gunicorn process
@@ -54,6 +72,13 @@
     name: h
     state: started
   tags: start-h
+
+- name: start the h.socket process
+  become: yes
+  service:
+    name: h.socket
+    state: started
+  tags: start-worker
 
 - name: start the h-worker process
   become: yes
