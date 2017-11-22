@@ -1,8 +1,0 @@
-[Unit]
-Description=gunicorn socket
-
-[Socket]
-ListenStream=/tmp/{{ openstax_hypothesis_role.application_name }}.sock
-
-[Install]
-WantedBy=sockets.target

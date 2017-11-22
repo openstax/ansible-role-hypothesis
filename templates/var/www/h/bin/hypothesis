@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -eu
+
+# Set the environment variables needed
+{% for k, v in item.value.env_vars.items() %}
+export {{ k }}={{ v }}
+{% endfor %}
+
+# Change into the main dir
+cd "$(dirname "$0")"
+cd ..
+
+# Activate the virtualenv (set only when deployed)
+. .env/bin/activate
+
+# Execute commands based on the h module
+exec python -m h "$@"

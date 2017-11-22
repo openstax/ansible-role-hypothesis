@@ -1,14 +1,11 @@
 # {{ ansible_managed }}
 [Unit]
-Description={{ item.description }}
-{% if 'requires' in item %}
-Requires={{ item.requires }} 
-{% endif %}
+Description={{ item.value.description }}
 After=network.target
 
 [Service]
-{% for param in item.service_params %}
-{{ param.name }}={{ param.value }}
+{% for k, v in item.value.params.items() %}
+{{ k }}={{ v }}
 {% endfor %}
 
 [Install]

@@ -1,4 +1,4 @@
 # {{ ansible_managed }}
-{% for param in item.env_vars %}
-{{ param.name}}={{ param.value }}
+{% for k, v in item.value.env_vars.items() %}
+{{ k }}={{ v }}
 {% endfor %}

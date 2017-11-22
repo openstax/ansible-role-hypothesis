@@ -21,11 +21,25 @@
 - name: copy over the application .service and .socket file
   become: yes
   template:
-    src: "{{ item.template }}"
-    dest: "{{ item.dest }}"
-  with_items: 
-    - "{{ openstax_hypothesis_role.services }}"
-  when: item.state|default('present') != 'absent'
+    src: "{{ item.value.template }}"
+    dest: "{{ item.value.dest }}"
+  with_dict: "{{ openstax_hypothesis_role.services }}" 
+
+- name: copy over application/celery management bash scripts
+  become: yes
+  template:
+    src: "{{ item.value.template }}"
+    dest: "{{ item.value.dest }}"
+  with_dict: "{{ openstax_hypothesis_role.init_scripts }}" 
+  when: item.value.state|default('present') != 'absent'
+
+- name: copy over the env files to be used by the systemd services
+  become: yes
+  template:
+    src: "{{ item.value.template }}"
+    dest: "{{ item.value.dest }}"
+  with_dict: "{{ openstax_hypothesis_role.env_files }}" 
+  when: item.value.state|default('present') != 'absent'
 
 - name: copy over the box private_key
   become: yes
@@ -33,6 +47,13 @@
     content: "{{ openstax_hypothesis_role.box_rsa_private_key_content }}"
     dest: "{{ openstax_hypothesis_role.box_rsa_private_key_path }}"
     force: yes
+
+- name: start the h gunicorn process
+  become: yes
+  service:
+    name: h
+    state: started
+  tags: start-h
 
 - name: start the h-worker process
   become: yes
