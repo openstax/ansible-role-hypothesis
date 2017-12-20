@@ -3,6 +3,12 @@
   include_tasks: webconfig.yml
   tags: hypothesis-web
 
+- name: copy over the alembic config
+  become: yes
+  template:
+    src: conf/alembic.ini
+    dest: "{{ openstax_hypothesis_role.application_dir }}/conf/alembic.ini"
+  tags: alembic-config
 - name: Run the hypothesis initialization script
   command: "{{ openstax_hypothesis_role.virtualenv_bin_dir }}/python -m h init"
   environment:
@@ -18,13 +24,6 @@
   args: 
     chdir: "{{ openstax_hypothesis_role.application_dir }}"
   tags: gulp-build 
-
-- name: copy over the alembic config
-  become: yes
-  template:
-    src: conf/alembic.ini
-    dest: "{{ openstax_hypothesis_role.application_dir }}/conf/alembic.ini"
-  tags: alembic-config
 
 - name: copy over the application .service and .socket file
   become: yes
