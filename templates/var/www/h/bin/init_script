@@ -14,4 +14,4 @@ cd ..
 . /var/www/h/.env/bin/activate
 
 # Execute commands based on the h module
-exec {{ item.value.exec }}
+{{ item.value.exec }}

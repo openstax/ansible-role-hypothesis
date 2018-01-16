@@ -9,6 +9,7 @@
     src: conf/alembic.ini
     dest: "{{ openstax_hypothesis_role.application_dir }}/conf/alembic.ini"
   tags: alembic-config
+
 - name: Run the hypothesis initialization script
   command: "{{ openstax_hypothesis_role.virtualenv_bin_dir }}/python -m h init"
   environment:
@@ -31,6 +32,38 @@
     src: "{{ item.value.template }}"
     dest: "{{ item.value.dest }}"
   with_dict: "{{ openstax_hypothesis_role.services }}" 
+
+- name: check and see if the sql directory exists
+  stat:
+    path: "{{ openstax_hypothesis_role.application_dir }}/sql"
+  register: sql_home
+
+- name: Create the sql directory if it does not exist
+  become: yes
+  file: 
+    path: "{{ openstax_hypothesis_role.application_dir }}/sql"
+    state: directory
+    mode: 0750
+    owner: "{{ openstax_hypothesis_role.user }}"
+    group: "{{ openstax_hypothesis_role.group }}"
+  when: not sql_home.stat.exists
+
+- name: Copy the research_export.sql file to the sql folder
+  become: yes
+  copy:
+    src: annotation_export.sql
+    dest: "{{ openstax_hypothesis_role.application_dir }}/sql/annotation_export.sql"
+    mode: 0750
+    owner: "{{ openstax_hypothesis_role.user }}"
+    group: "{{ openstax_hypothesis_role.group }}"
+
+- name: pip install box-exporter
+  become: yes
+  become_user: "{{ openstax_hypothesis_role.user }}"
+  pip:
+    name: box-exporter
+    virtualenv: "{{ openstax_hypothesis_role.base }}"
+    virtualenv_python: "{{ openstax_hypothesis_role.virtualenv_python }}"
 
 - name: copy over application/celery management bash scripts
   become: yes
@@ -64,6 +97,13 @@
     dest: "{{ openstax_hypothesis_role.box_rsa_private_key_path }}"
     mode: 0600
     force: yes
+
+- name: create a crontab to run the annotation export
+  cron:
+    name: run the annotation export for researchers
+    minute: 59
+    hour: 23
+    job: '{{ openstax_hypothesis_role.application_dir }}/bin/export-annotations'
 
 - name: start the h gunicorn process
   become: yes
