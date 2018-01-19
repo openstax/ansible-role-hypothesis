@@ -99,6 +99,8 @@
     force: yes
 
 - name: create a crontab to run the annotation export
+  become: yes
+  become_user: "{{ openstax_hypothesis_role.user }}"
   cron:
     name: run the annotation export for researchers
     minute: 59
