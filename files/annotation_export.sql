@@ -1,6 +1,6 @@
 SELECT
   id AS annotation_id
-, regexp_replace(userid, '[^0-9]*', '', 'g') as student_id
+, regexp_replace(userid, '[^0-9]*', '', 'g') as user_id
 , created AS created_on
 , updated AS updated_on
 , CASE WHEN deleted = TRUE THEN 'TRUE' ELSE 'FALSE' END as is_deleted
