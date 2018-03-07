@@ -1,13 +1,11 @@
 ---
 - name: copy over the nginx configuration
-  become: yes
-  template: 
+  template:
     src: etc/nginx/sites-available/hypothesis.conf
     dest: /etc/nginx/sites-available/hypothesis.conf
   tags: nginx-copy
 
-- name: enable the site 
-  become: yes
+- name: enable the site
   file:
     src: /etc/nginx/sites-available/hypothesis.conf
     dest: /etc/nginx/sites-enabled/hypothesis.conf
